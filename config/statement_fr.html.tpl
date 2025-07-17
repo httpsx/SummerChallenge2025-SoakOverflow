@@ -838,11 +838,11 @@
           <var>myId</var>, identifiant de votre joueur.
           <p>
             <span class="statement-lineno">Deuxième ligne :</span> un entier
-            <var>agentCount</var> correspondant au nombre d'agents sur la
+            <var>agentDataCount</var> correspondant au nombre d'agents sur la
             grille.
           </p>
           <p>
-            <span class="statement-lineno">Les </span><var>agentCount</var>
+            <span class="statement-lineno">Les </span><var>agentDataCount</var>
             <span class="statement-lineno">lignes suivantes :</span> Les
             <const>6</const> informations suivantes pour chaque agent :
           </p>
@@ -994,9 +994,11 @@
           Temps de réponse par tour ≤ <const>50</const> ms <br />Temps de
           réponse pour le premier tour ≤ <const>1000</const> ms
           <br />
-          <const>16</const> &le; <var>width</var> &le; <const>24</const>
+          <const>12</const> &le; <var>width</var> &le; <const>20</const>
           <br />
-          <const>8</const> &le; <var>height</var> &le; <const>12</const>
+          <const>6</const> &le; <var>height</var> &le; <const>10</const>
+          <br />
+          <const>3</const> &le; <var>agentDataCount</var> &le; <const>5</const>
         </div>
       </div>
       <!-- BEGIN level2 level3 level4 -->

@@ -805,10 +805,10 @@
           <var>myId</var>, for your player identification.
           <p>
             <span class="statement-lineno">Second line:</span> one integer
-            <var>agentCount</var> for the number of agents on the grid.
+            <var>agentDataCount</var> for the number of agents on the grid.
           </p>
           <p>
-            <span class="statement-lineno">Next </span><var>agentCount</var>
+            <span class="statement-lineno">Next </span><var>agentDataCount</var>
             <span class="statement-lineno">lines:</span> The following
             <const>6</const> inputs for each agent:
           </p>
@@ -930,7 +930,7 @@
             </li>
           </ul>
           <p>
-            Instructions are separated by semi-columns. For example, consider
+            Instructions are separated by semicolons. For example, consider
             the following line:
           </p>
           <p>
@@ -957,9 +957,11 @@
           Response time per turn ≤ <const>50</const>ms <br />Response time for
           the first turn ≤ <const>1000</const>ms
           <br />
-          <const>16</const> &le; <var>width</var> &le; <const>24</const>
+          <const>12</const> &le; <var>width</var> &le; <const>20</const>
           <br />
-          <const>8</const> &le; <var>height</var> &le; <const>12</const>
+          <const>6</const> &le; <var>height</var> &le; <const>10</const>
+          <br />
+          <const>3</const> &le; <var>agentDataCount</var> &le; <const>5</const>
         </div>
       </div>
 

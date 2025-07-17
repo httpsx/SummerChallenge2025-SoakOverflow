@@ -347,6 +347,7 @@ public class TutorialManager {
             return false;
         }
 
+        //XXX: will return false even if the auto-pathfinder moves agent to the right place
         if (!agent1.getMoveAction().getCoord().equals(runAndGunCoords[0]) || !agent2.getMoveAction().getCoord().equals(runAndGunCoords[1])) {
             return false;
         }
@@ -357,6 +358,10 @@ public class TutorialManager {
 
         Agent target1 = game.getAgentById(agent1.getCombatAction().getAgentId());
         Agent target2 = game.getAgentById(agent2.getCombatAction().getAgentId());
+        if (target1 == null || target2 == null) {
+            return false;
+        }
+        
         if (
             !target1.getPosition().equals(runAndGunCoords[2])
                 || !target2.getPosition().equals(runAndGunCoords[3])

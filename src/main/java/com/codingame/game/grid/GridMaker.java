@@ -19,8 +19,8 @@ public class GridMaker {
     private static final int GRID_W_RATIO = 2;
     public static final int MIN_SPAWN_COUNT = 3;
     public static final int MAX_SPAWN_COUNT = 5;
-    public static final int MIN_WIDTH = 6;
-    public static final int MAX_WIDTH = 10;
+    public static final int MIN_HEIGHT = 6;
+    public static final int MAX_HEIGHT = 10;
 
     public static Grid initEmpty(int w, int h) {
         Grid grid = new Grid(w, h, false);
@@ -33,7 +33,7 @@ public class GridMaker {
     }
     
     public static Grid initGrid(Random random) {
-        int h = random.nextInt(MIN_WIDTH, MAX_WIDTH + 1);
+        int h = random.nextInt(MIN_HEIGHT, MAX_HEIGHT + 1);
         int w = h * GRID_W_RATIO;
 
         boolean ySym = random.nextBoolean() || random.nextBoolean();

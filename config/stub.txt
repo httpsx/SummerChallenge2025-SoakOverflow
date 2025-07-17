@@ -2,8 +2,8 @@ STATEMENT
 Win the water fight by controlling the most territory, or out-soak your opponent!
 
 read myId:int
-read agentCount:int
-loop agentCount read agentId:int player:int shootCooldown:int optimalRange:int soakingPower:int splashBombs:int
+read agentDataCount:int
+loop agentDataCount read agentId:int player:int shootCooldown:int optimalRange:int soakingPower:int splashBombs:int
 read width:int height:int
 loop height loopline width x:int y:int tileType:int
 gameloop
@@ -14,7 +14,8 @@ loop myAgentCount write HUNKER_DOWN
 
 INPUT
 myId: Your player id (0 or 1)
-agentCount: Total number of agents in the game
+agentCount: Total number of agents still in the game
+agentDataCount: Total number of agents in the game
 agentId: Unique identifier for this agent
 player: Player id of this agent
 shootCooldown: Number of turns between each of this agent's shots
