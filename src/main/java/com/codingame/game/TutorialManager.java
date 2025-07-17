@@ -11,12 +11,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.codingame.game.Game.Move;
 import com.codingame.game.action.Action;
 import com.codingame.game.action.ActionType;
 import com.codingame.game.grid.Coord;
 import com.codingame.game.grid.GridMaker;
 import com.codingame.game.grid.Tile;
 import com.codingame.game.pathfinding.PathFinder;
+import com.codingame.game.pathfinding.PathFinder.PathFinderResult;
 import com.codingame.gameengine.core.MultiplayerGameManager;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -39,10 +41,9 @@ public class TutorialManager {
         this.random = random;
         this.players = gameManager.getPlayers();
         if (leagueLevel == -1) {
-          // Debugging and screenshot taking
+            // Debugging and screenshot taking
             Game.CONTROL_ZONES = false;
             Game.ONE_PLAYER_MODE = false;
-            
 
             game.grid = GridMaker.initEmpty(6, 4);
             pathfinder.setGrid(game.grid);
@@ -56,16 +57,17 @@ public class TutorialManager {
             game.grid.get(1, 0).setType(Tile.TYPE_LOW_COVER);
             game.grid.get(0, 3).setType(Tile.TYPE_HIGH_COVER);
             game.grid.get(4, 2).setType(Tile.TYPE_HIGH_COVER);
-            
+
             agent1 = new Agent(agentId++, AgentClass.SNIPER);
             agent1.balloons = 0;
             player = players.get(1);
             player.agents.add(agent1);
             agent1.owner = player;
             agent1.setPosition(new Coord(1, 2));
-            
+
             return true;
-        } if (leagueLevel == 1) {
+        }
+        if (leagueLevel == 1) {
             Game.ONE_PLAYER_MODE = true;
             Game.CONTROL_ZONES = false;
             Game.ALLOW_SHOOT = false;
@@ -272,7 +274,7 @@ public class TutorialManager {
                 a.balloons = i == 0 ? 3 : 1;
                 a.setPosition(new Coord(game.grid.width / 2, game.grid.height / 2 - i));
             }
-            
+
             // shuffle ids
             if (random.nextBoolean()) {
                 player.agents.get(0).id = 2;
@@ -348,8 +350,15 @@ public class TutorialManager {
         }
 
         //XXX: will return false even if the auto-pathfinder moves agent to the right place
-        if (!agent1.getMoveAction().getCoord().equals(runAndGunCoords[0]) || !agent2.getMoveAction().getCoord().equals(runAndGunCoords[1])) {
-            return false;
+        Coord moveTo1 = getPathFinderResult(agent1);
+        Coord moveTo2 = getPathFinderResult(agent2);
+        Coord at1 = agent1.getPosition();
+        Coord at2 = agent2.getPosition();
+        
+        if (!runAndGunCoords[0].equals(moveTo1) || !runAndGunCoords[1].equals(moveTo2)) {
+            if (!runAndGunCoords[0].equals(at1) || !runAndGunCoords[1].equals(at2)) {
+                return false;
+            }
         }
 
         if (!agent1.hasShootAction() || !agent2.hasShootAction()) {
@@ -361,7 +370,7 @@ public class TutorialManager {
         if (target1 == null || target2 == null) {
             return false;
         }
-        
+
         if (
             !target1.getPosition().equals(runAndGunCoords[2])
                 || !target2.getPosition().equals(runAndGunCoords[3])
@@ -370,6 +379,17 @@ public class TutorialManager {
         }
 
         return true;
+    }
+
+    private Coord getPathFinderResult(Agent agent) {
+        PathFinderResult res = pathfinder
+            .from(agent.getPosition())
+            .to(agent.getMoveAction().getCoord())
+            .findPath();
+        if (!res.hasNextCoord()) {
+            return null;
+        }
+        return res.getNextCoord();
     }
 
     // For league 3
