@@ -724,7 +724,7 @@ export class ViewModule {
 
       this.registerTooltip(container, () => {
         let text = `agentId: ${agentId}\n`
-        +`owner: ${['RED', 'BLUE'][pIdx]}\n`
+        +`owner: ${['Orange (0)', 'Purple (1)'][pIdx]}\n`
         +`cooldown: ${globalAgent.cooldown}\n`
         +`optimal range: ${globalAgent.optimalRange}\n`
         +`soaking power: ${globalAgent.soakingPower}\n`

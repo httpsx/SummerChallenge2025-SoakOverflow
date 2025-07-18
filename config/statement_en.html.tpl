@@ -662,7 +662,7 @@
               In this league, you will have exactly <strong>1 turn </strong>to
               get both your agents behind the best of two adjacent tiles behind
               cover then shoot the opposing enemy with the least protection from
-              cover.
+              cover (of the two closest enemies).
             </p>
             <!-- END -->
 
@@ -961,7 +961,7 @@
           <br />
           <const>6</const> &le; <var>height</var> &le; <const>10</const>
           <br />
-          <const>3</const> &le; <var>agentDataCount</var> &le; <const>5</const>
+          <const>6</const> &le; <var>agentDataCount</var> &le; <const>10</const>
         </div>
       </div>
 

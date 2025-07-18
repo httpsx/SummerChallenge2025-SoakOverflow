@@ -390,7 +390,7 @@
             />
             <div class="legend">
               <div class="description">
-                Un agent orthogonalement adjacent au côté gauche d’une basse
+                Un agent adjacent à gauche d’une basse
                 couverture. Tirer sur cet agent depuis une case verte entraînera
                 une réduction des dégâts.
               </div>
@@ -998,7 +998,7 @@
           <br />
           <const>6</const> &le; <var>height</var> &le; <const>10</const>
           <br />
-          <const>3</const> &le; <var>agentDataCount</var> &le; <const>5</const>
+          <const>6</const> &le; <var>agentDataCount</var> &le; <const>10</const>
         </div>
       </div>
       <!-- BEGIN level2 level3 level4 -->
