@@ -60,8 +60,7 @@ public class CommandManager {
                             break;
                         }
                     } catch (Exception e) {
-                        //                        throw new InvalidInputException(Game.getExpected(command), e.toString());
-                        throw e;
+                        throw new InvalidInputException(Game.getExpected(command), command);
                     }
 
                     if (!found) {

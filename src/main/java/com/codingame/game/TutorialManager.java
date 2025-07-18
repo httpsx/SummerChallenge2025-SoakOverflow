@@ -485,12 +485,15 @@ public class TutorialManager {
                 Collections.shuffle(executioners, random);
 
                 int eId = 0;
-                for (Agent a : executioners.subList(0, 2)) {
+                for (Agent a : executioners) {
                     Action action = new Action(ActionType.SHOOT);
                     int targetId = (eId % 2) + 1;
                     action.setAgentId(targetId);
                     a.setCombatAction(action);
                     eId++;
+                    if (eId >= 2) {
+                        break;
+                    }
                 }
             }
         }
