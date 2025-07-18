@@ -70,12 +70,11 @@ public class Game {
         teamlessCount = 0;
 
         this.leagueLevel = gameManager.getLeagueLevel();
-//        this.leagueLevel = -1;
 
         inTutorial = tutorialManager.initTutorial(random, this.leagueLevel);
         if (!inTutorial) {
             initGrid();
-            initPlayers();            
+            initPlayers();
         }
 
         initControlZones();
@@ -151,6 +150,7 @@ public class Game {
             updateControlZones();
             scorePoints();
         }
+
         computeEvents();
         if (isGameOver()) {
             gameManager.endGame();
@@ -182,8 +182,9 @@ public class Game {
             List<Agent> liveAgents = allAgentStream()
                 .filter(a -> !a.dying)
                 .toList();
-            
+
             List<Agent> closestAgents = grid.getClosestTargets(c, liveAgents);
+
             if (closestAgents.isEmpty()) {
                 continue;
             }
@@ -552,7 +553,7 @@ public class Game {
             return tutorialManager.league1ObjectiveComplete();
         } else if (leagueLevel == 4) {
             if (tutorialManager.league4ObjectiveComplete()) {
-                return true; 
+                return true;
             }
         }
         boolean p0win = players.get(0).points > players.get(1).points + MAX_POINT_DIFF;
@@ -567,8 +568,10 @@ public class Game {
         if (inTutorial) {
             tutorialManager.handleEnd(scoreTexts);
         } else {
+            boolean bothDead = teamlessCount == players.size();
             for (Player p : players) {
-                if (!p.isActive() || p.getLiveAgentCount() == 0) {
+
+                if (!p.isActive() || (p.getLiveAgentCount() == 0 && !bothDead)) {
                     p.setScore(-1);
                     scoreTexts[p.getIndex()] = "-";
                 } else {
