@@ -57,6 +57,7 @@ export interface AgentDto extends GlobalAgentDto {
   shootingId: number
   hunkered: boolean
   throwingTo: CoordDto
+  canShootIn: number
 }
 export interface FrameDataDTO {
   events: EventDto[]
@@ -139,5 +140,6 @@ export interface Agent extends GlobalAgentDto {
   sprite: PIXI.Container
   spriteContainer: PIXI.Container
   wetnessMask: PIXI.Sprite
+  wetnessText: PIXI.Text
   wetContainer: PIXI.Container
 }

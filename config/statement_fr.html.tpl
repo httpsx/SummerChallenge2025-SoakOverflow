@@ -245,7 +245,7 @@
 
         <div style="text-align: center; margin: 15px">
           <img
-            src="https://static.codingame.com/servlet/fileservlet?id=145554421411298"
+            src="https://static.codingame.com/servlet/fileservlet?id=147595400748837"
             style="width: 60%; max-width: 300px"
           />
         </div>
@@ -993,12 +993,14 @@
         <div class="text">
           Temps de réponse par tour ≤ <const>50</const> ms <br />Temps de
           réponse pour le premier tour ≤ <const>1000</const> ms
+          <!-- BEGIN level5 -->
           <br />
           <const>12</const> &le; <var>width</var> &le; <const>20</const>
           <br />
           <const>6</const> &le; <var>height</var> &le; <const>10</const>
           <br />
           <const>6</const> &le; <var>agentDataCount</var> &le; <const>10</const>
+          <!-- END -->
         </div>
       </div>
       <!-- BEGIN level2 level3 level4 -->

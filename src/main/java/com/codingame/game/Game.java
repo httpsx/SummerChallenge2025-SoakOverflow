@@ -179,7 +179,11 @@ public class Game {
             return;
         }
         for (Coord c : grid.getCoords()) {
-            List<Agent> closestAgents = grid.getClosestTargets(c, allAgentStream().toList());
+            List<Agent> liveAgents = allAgentStream()
+                .filter(a -> !a.dying)
+                .toList();
+            
+            List<Agent> closestAgents = grid.getClosestTargets(c, liveAgents);
             if (closestAgents.isEmpty()) {
                 continue;
             }

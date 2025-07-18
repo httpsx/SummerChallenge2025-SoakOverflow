@@ -29,6 +29,18 @@ export const options = [
       'OFF': false
     },
   }, {
+    title: 'WETNESS',
+    get: function () {
+      return api.options.wetnessIcon
+    },
+    set: function (value) {
+      api.setWetnessIcon(value)
+    },
+    values: {
+      'ICON': true,
+      'NUMBER': false
+    },
+  }, {
     title: 'MY MESSAGES',
     get: function () {
       return api.options.showMyMessages

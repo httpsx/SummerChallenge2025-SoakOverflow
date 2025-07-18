@@ -10,7 +10,7 @@ import { TooltipManager } from './TooltipManager.js'
 import { AGENT_TILE_PADDING, AVATAR_RECT, BOOM_SIZE, COVERS, DEATH_FRAMES, GAME_ZONE_RECT, GRID_LINE_WIDTH, GUN_BARREL_RATIO, GUN_TIP_RATIO, HUD_COLORS, LIQUID_TUBE_LENGTH, NAME_RECT, ORANGE_COURSE_FRAMES, ORANGE_GRENADE_FRAMES, ORANGE_PLANQUE_FRAMES, ORANGE_TIR_FRAMES, SCORE_RECT, SPLASH_ANCHOR, SPLASH_GRENADE_FRAMES, SPLASH_TIR_FRAMES, STREAM_FRAME, THROW_ANCHOR, VIOLET_COURSE_FRAMES, VIOLET_GRENADE_FRAMES, VIOLET_PLANQUE_FRAMES, VIOLET_TIR_FRAMES } from './assetConstants.js'
 import ev from './events.js'
 import { computeRotationAngle, normalizeAngle, rotateAround } from './trigo.js'
-import { angleDiff, choice, fit, last, setAnimationProgress } from './utils.js'
+import { angleDiff, choice, fit, generateText, last, setAnimationProgress } from './utils.js'
 
 
 //TODO: add bomb assets to agents?
@@ -28,8 +28,12 @@ const api = {
   setDebugMode: (value: boolean) => {
     api.options.debugMode = value
   },
+  setWetnessIcon: (value: boolean) => {
+    api.options.wetnessIcon = value
+  },
   options: {
     debugMode: false,
+    wetnessIcon: true,
 
     showOthersMessages: true,
     showMyMessages: true,
@@ -279,6 +283,8 @@ export class ViewModule {
     for (let player of this.globalData.players) {
       const {score} = this.huds[player.index]
       score.text = data.scores[player.index].toString()
+      score.scale.set(1)
+      this.placeInHUD(score, SCORE_RECT, player.index)
     }
 
     const prevScoreDiff = this.previousData.scores[1] - this.previousData.scores[0]
@@ -610,6 +616,7 @@ export class ViewModule {
       if (agent.container.visible) {
         let wetnessData = this.progress === 1 ? (cur ?? prev) : prev
         agent.wetnessMask.height = wetnessData.wetness/100 * this.fullWetnessMaskHeight
+        agent.wetnessText.text = wetnessData.wetness.toString().padStart(2, '0')
 
         // No animation was set for this visible agent this frame?
         if (!animationSet.has(agent.id)) {
@@ -687,15 +694,27 @@ export class ViewModule {
       const wetnessBackground = PIXI.Sprite.from(`${pIdx == 0 ? 'Orange' : 'Violet'}_Life_Full`)
       const wetnessMask = new PIXI.Sprite(PIXI.Texture.WHITE)
       const wetness = PIXI.Sprite.from('Life_Empty')
+      const wetnessText = new PIXI.Text('00', {
+        fontSize: '25px',
+        fill: 0x61d2f3,
+        fontWeight: 'bold'
+      })
       const wetContainer = new PIXI.Container()
-      ;[wetnessBackground, wetnessMask, wetness].forEach(s => {
+      ;[wetnessBackground, wetnessMask, wetness, wetnessText].forEach(s => {
         wetContainer.addChild(s)
         s.anchor.set(0.5, 1)
         fit(s, this.agentSize * WETNESS_ICON_SCALE, this.agentSize * WETNESS_ICON_SCALE)
         s.position.set(0, -this.agentSize / 2)
+
+        Object.defineProperty(s, 'visible', {
+          get: () => {
+            const iconVis = this.api.options.wetnessIcon
+            return s === wetnessText ? !iconVis : iconVis
+          }
+        })
+
       })
       wetness.mask = wetnessMask
-
 
       const spriteContainer = new PIXI.Container()
 
@@ -710,6 +729,7 @@ export class ViewModule {
         container,
         spriteContainer,
         wetnessMask,
+        wetnessText,
         wetContainer,
         sprite,
         animations: {
@@ -723,17 +743,18 @@ export class ViewModule {
       this.agentMap[agentId] = agent
 
       this.registerTooltip(container, () => {
+        let cur = this.currentData.agentMap[agentId]
+        let prev = this.previousData.agentMap[agentId]
+        let data = (cur ?? prev)
+
         let text = `agentId: ${agentId}\n`
         +`owner: ${['Orange (0)', 'Purple (1)'][pIdx]}\n`
-        +`cooldown: ${globalAgent.cooldown}\n`
+        +`cooldown: ${data.canShootIn} / ${globalAgent.cooldown}\n`
         +`optimal range: ${globalAgent.optimalRange}\n`
         +`soaking power: ${globalAgent.soakingPower}\n`
         if (this.progress < 1) {
           text += '---at frame end---\n'
         }
-        let cur = this.currentData.agentMap[agentId]
-        let prev = this.previousData.agentMap[agentId]
-        let data = (cur ?? prev)
         text += `wetness: ${data.wetness}\n`
         if (cur != null) {
           if (data.hunkered) {
@@ -826,8 +847,8 @@ export class ViewModule {
 
   placeInHUD(element: PIXI.Text | PIXI.Sprite, {x,y,w,h}: {x:number,y:number,w:number,h:number}, pIdx: number) {
     fit(element, w, h)
-    element.position.set(pIdx ? WIDTH - 1 - x : x, y)
-    element.anchor.set(pIdx ? 1 : 0, 0)
+    element.position.set(pIdx ? WIDTH - 1 - x : x, y + h / 2)
+    element.anchor.set(pIdx ? 1 : 0, 0.55)
   }
 
   initHud(layer: PIXI.Container) {
@@ -1035,7 +1056,8 @@ export class ViewModule {
           wetness: globalAgent.initialWetness,
           shootingId: null,
           hunkered: false,
-          throwingTo: null
+          throwingTo: null,
+          canShootIn: 0
         }
         frameData.agentMap[agent.id] = agent
       }
@@ -1048,13 +1070,13 @@ export class ViewModule {
           shootingId: null,
           hunkered: false,
           throwingTo: null,
-          damageHistory: []
+          damageHistory: [],
+          canShootIn: Math.max(0, agent.canShootIn - 1)
         }
       }
     }
 
     frameData.previous = previousFrame ?? frameData
-
 
     for (const event of dto.events) {
       if (event.type === ev.MOVE) {
@@ -1079,7 +1101,8 @@ export class ViewModule {
         }
         frameData.agentMap[event.id] = {
           ...frameData.agentMap[event.id],
-          shootingId: event.params[0]
+          shootingId: event.params[0],
+          canShootIn: frameData.agentMap[event.id].cooldown
         }
       } else if (event.type === ev.DEATH) {
         delete frameData.agentMap[event.id]

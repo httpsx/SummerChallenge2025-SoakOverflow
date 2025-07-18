@@ -17,8 +17,12 @@ const api = {
     setDebugMode: (value) => {
         api.options.debugMode = value;
     },
+    setWetnessIcon: (value) => {
+        api.options.wetnessIcon = value;
+    },
     options: {
         debugMode: false,
+        wetnessIcon: true,
         showOthersMessages: true,
         showMyMessages: true,
         meInGame: false,
@@ -203,6 +207,8 @@ export class ViewModule {
         for (let player of this.globalData.players) {
             const { score } = this.huds[player.index];
             score.text = data.scores[player.index].toString();
+            score.scale.set(1);
+            this.placeInHUD(score, SCORE_RECT, player.index);
         }
         const prevScoreDiff = this.previousData.scores[1] - this.previousData.scores[0];
         const curScoreDiff = this.currentData.scores[1] - this.currentData.scores[0];
@@ -478,6 +484,7 @@ export class ViewModule {
             if (agent.container.visible) {
                 let wetnessData = this.progress === 1 ? (cur !== null && cur !== void 0 ? cur : prev) : prev;
                 agent.wetnessMask.height = wetnessData.wetness / 100 * this.fullWetnessMaskHeight;
+                agent.wetnessText.text = wetnessData.wetness.toString().padStart(2, '0');
                 // No animation was set for this visible agent this frame?
                 if (!animationSet.has(agent.id)) {
                     this.setAgentAnimation(agent, agent.animations.run);
@@ -542,12 +549,23 @@ export class ViewModule {
             const wetnessBackground = PIXI.Sprite.from(`${pIdx == 0 ? 'Orange' : 'Violet'}_Life_Full`);
             const wetnessMask = new PIXI.Sprite(PIXI.Texture.WHITE);
             const wetness = PIXI.Sprite.from('Life_Empty');
+            const wetnessText = new PIXI.Text('00', {
+                fontSize: '25px',
+                fill: 0x61d2f3,
+                fontWeight: 'bold'
+            });
             const wetContainer = new PIXI.Container();
-            [wetnessBackground, wetnessMask, wetness].forEach(s => {
+            [wetnessBackground, wetnessMask, wetness, wetnessText].forEach(s => {
                 wetContainer.addChild(s);
                 s.anchor.set(0.5, 1);
                 fit(s, this.agentSize * WETNESS_ICON_SCALE, this.agentSize * WETNESS_ICON_SCALE);
                 s.position.set(0, -this.agentSize / 2);
+                Object.defineProperty(s, 'visible', {
+                    get: () => {
+                        const iconVis = this.api.options.wetnessIcon;
+                        return s === wetnessText ? !iconVis : iconVis;
+                    }
+                });
             });
             wetness.mask = wetnessMask;
             const spriteContainer = new PIXI.Container();
@@ -559,6 +577,7 @@ export class ViewModule {
             const agent = Object.assign(Object.assign({}, globalAgent), { container,
                 spriteContainer,
                 wetnessMask,
+                wetnessText,
                 wetContainer,
                 sprite, animations: {
                     run,
@@ -569,17 +588,17 @@ export class ViewModule {
             this.agents.push(agent);
             this.agentMap[agentId] = agent;
             this.registerTooltip(container, () => {
+                let cur = this.currentData.agentMap[agentId];
+                let prev = this.previousData.agentMap[agentId];
+                let data = (cur !== null && cur !== void 0 ? cur : prev);
                 let text = `agentId: ${agentId}\n`
                     + `owner: ${['Orange (0)', 'Purple (1)'][pIdx]}\n`
-                    + `cooldown: ${globalAgent.cooldown}\n`
+                    + `cooldown: ${data.canShootIn} / ${globalAgent.cooldown}\n`
                     + `optimal range: ${globalAgent.optimalRange}\n`
                     + `soaking power: ${globalAgent.soakingPower}\n`;
                 if (this.progress < 1) {
                     text += '---at frame end---\n';
                 }
-                let cur = this.currentData.agentMap[agentId];
-                let prev = this.previousData.agentMap[agentId];
-                let data = (cur !== null && cur !== void 0 ? cur : prev);
                 text += `wetness: ${data.wetness}\n`;
                 if (cur != null) {
                     if (data.hunkered) {
@@ -656,8 +675,8 @@ export class ViewModule {
     }
     placeInHUD(element, { x, y, w, h }, pIdx) {
         fit(element, w, h);
-        element.position.set(pIdx ? WIDTH - 1 - x : x, y);
-        element.anchor.set(pIdx ? 1 : 0, 0);
+        element.position.set(pIdx ? WIDTH - 1 - x : x, y + h / 2);
+        element.anchor.set(pIdx ? 1 : 0, 0.55);
     }
     initHud(layer) {
         const background = PIXI.Sprite.from('HUD.png');
@@ -813,7 +832,7 @@ export class ViewModule {
         const previousFrame = last(this.states);
         if (previousFrame == null) {
             for (const globalAgent of this.globalData.agents) {
-                const agent = Object.assign(Object.assign({}, globalAgent), { damageHistory: [], wetness: globalAgent.initialWetness, shootingId: null, hunkered: false, throwingTo: null });
+                const agent = Object.assign(Object.assign({}, globalAgent), { damageHistory: [], wetness: globalAgent.initialWetness, shootingId: null, hunkered: false, throwingTo: null, canShootIn: 0 });
                 frameData.agentMap[agent.id] = agent;
             }
         }
@@ -821,7 +840,7 @@ export class ViewModule {
             frameData.agentMap = {};
             for (const agentId in previousFrame.agentMap) {
                 const agent = previousFrame.agentMap[agentId];
-                frameData.agentMap[agentId] = Object.assign(Object.assign({}, agent), { shootingId: null, hunkered: false, throwingTo: null, damageHistory: [] });
+                frameData.agentMap[agentId] = Object.assign(Object.assign({}, agent), { shootingId: null, hunkered: false, throwingTo: null, damageHistory: [], canShootIn: Math.max(0, agent.canShootIn - 1) });
             }
         }
         frameData.previous = previousFrame !== null && previousFrame !== void 0 ? previousFrame : frameData;
@@ -839,7 +858,7 @@ export class ViewModule {
                             value: damage,
                             text: `+${damage} wetness: shot by ${event.id}`
                         }] });
-                frameData.agentMap[event.id] = Object.assign(Object.assign({}, frameData.agentMap[event.id]), { shootingId: event.params[0] });
+                frameData.agentMap[event.id] = Object.assign(Object.assign({}, frameData.agentMap[event.id]), { shootingId: event.params[0], canShootIn: frameData.agentMap[event.id].cooldown });
             }
             else if (event.type === ev.DEATH) {
                 delete frameData.agentMap[event.id];
