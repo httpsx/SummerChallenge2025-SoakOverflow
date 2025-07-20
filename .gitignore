@@ -6,5 +6,9 @@
 /.settings/
 statement_en.html
 statement_fr.html
+src/main/resources/node_modules/
 src/main/resources/view/node_modules/
+src/main/resources/view/graphics/
+src/main/resources/view/endscreen-module/
 JulienMain.java
+dependency-reduced-pom.xml
